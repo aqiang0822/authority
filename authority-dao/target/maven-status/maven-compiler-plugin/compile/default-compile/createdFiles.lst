@@ -1,0 +1,7 @@
+org\aptech\shiro\authority\pojo\SysRole.class
+org\aptech\shiro\authority\dao\SysUserDao.class
+org\aptech\shiro\authority\dao\SysRoleDao.class
+org\aptech\shiro\authority\dao\SysPermissionDao.class
+org\aptech\shiro\authority\pojo\SysPermission.class
+org\aptech\shiro\authority\dao\CommonDao.class
+org\aptech\shiro\authority\pojo\SysUser.class

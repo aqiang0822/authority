@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.aptech.shiro.authority.dao.SysRoleDao">
+
+	<insert id="add" parameterType="org.aptech.shiro.authority.pojo.SysRole"
+		useGeneratedKeys="true" keyColumn="id" keyProperty="id">
+		insert into sys_Role(name,available)
+			values(#{name},#{available})
+	</insert>
+	
+	<update id="update" parameterType="org.aptech.shiro.authority.pojo.SysRole">
+		update sys_Role set name = #{name},available = #{available}
+			where id = #{id}
+	</update>
+	
+	<delete id="deleteByIds" parameterType="java.lang.reflect.Array">
+		delete from sys_Role where id in
+		<foreach collection="array" item="item" open="(" close=")" separator=",">
+			#{item}
+		</foreach>
+	</delete>
+
+	<sql id="conditionSql">
+		<if test="condition != null">
+			<where>
+				<if test="condition.name!=null and condition.name!=''">
+					and name like concat('%',#{condition.name},'%')
+				</if>
+			</where>
+		</if>
+	</sql>
+	
+	<select id="getAll" resultType="org.aptech.shiro.authority.pojo.SysRole">
+		select * from sys_Role
+	</select>
+	
+	<select id="getById" parameterType="int" resultType="org.aptech.shiro.authority.pojo.SysRole">
+		select * from sys_Role where id = #{id}
+	</select>
+	
+	<select id="getRolesByUserId" parameterType="int" resultType="org.aptech.shiro.authority.pojo.SysRole">
+		select * from sys_role where id in (select sys_role_id from sys_user_role where sys_user_id = #{id})
+	</select>
+	
+	<select id="getListByCondition" resultType="org.aptech.shiro.authority.pojo.SysRole">
+		select * from sys_role
+			<include refid="conditionSql"></include>
+		order by ${column} ${orderBy}
+			limit #{start},#{limit}
+	</select>
+	<select id="getCountByCondition" resultType="int">
+		select count(1) from sys_Role
+			<include refid="conditionSql"></include>
+	</select>
+	
+	
+</mapper>

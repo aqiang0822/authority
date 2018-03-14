@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.aptech.shiro.authority.dao.SysUserDao">
+
+	<insert id="add" parameterType="org.aptech.shiro.authority.pojo.SysUser" useGeneratedKeys="true" keyColumn="id" keyProperty="id">
+		INSERT INTO sys_user(username,PASSWORD,salt,locked)VALUES(#{username},#{password},#{salt},0);
+	</insert>
+	
+	<insert id="addUserRole">
+		insert into sys_user_role(sys_user_id,sys_role_id)
+			values 
+			<foreach collection="roleIds" item="item" separator=",">
+				(#{userId},#{item})
+			</foreach>
+	</insert>
+	
+	<delete id="deleteById" parameterType="int">
+		DELETE FROM sys_user WHERE id = #{id}
+	</delete>
+	
+	<delete id="deleteByIds" parameterType="java.lang.reflect.Array">
+		DELETE FROM sys_user WHERE id IN
+		<foreach collection="array" item="item" open="(" close=")" separator=",">
+			#{item}
+		</foreach>
+	</delete>
+	
+	<delete id="deleteRoleGuanxiByUserId" parameterType="int">
+		DELETE FROM sys_user_role WHERE sys_user_id = #{id}
+	</delete>
+	
+	<update id="update" parameterType="org.aptech.shiro.authority.pojo.SysUser">
+		UPDATE sys_user 
+		<set>
+			<if test="username!=null">username = #{username},</if>
+			<if test="password!=null">password = #{password},</if>
+			<if test="salt!=null">salt = #{salt},</if>
+			<if test="locked!=null">locked = #{locked}</if>
+			<!-- 修改角色没写！ -->
+		</set>
+		where id = #{id}
+	</update>
+	
+	<sql id="conditionSql">
+		<if test="condition!=null">
+			<where>
+				<if test="condition.username!=null and condition.username!=''">
+					and username like concat('%',#{condition.username},'%')
+				</if>
+				<if test="condition.sysRoles!=null and condition.sysRoles.size>0">
+					and id in (SELECT sys_user_id FROM sys_user_role WHERE  sys_role_id IN
+						<foreach collection="condition.sysRoles" open="(" close=")" separator="," item="item">
+							#{item.id}
+						</foreach>
+					)
+				</if>
+			</where>
+		</if>
+	</sql>
+	
+	<resultMap type="org.aptech.shiro.authority.pojo.SysUser" id="userMap" autoMapping="true">
+		<id property="id" column="id"/>
+		<collection property="sysRoles" javaType="java.util.List" ofType="org.aptech.shiro.authority.pojo.SysRole" column="id" select="org.aptech.shiro.authority.dao.SysRoleDao.getRolesByUserId"></collection>
+	</resultMap>
+	
+	<!-- 根据用户名查询用户，登陆 -->
+	<select id="getByUsername" parameterType="string" resultMap="userMap">
+		select * from sys_user where username = #{username};
+	</select>
+	
+	<select id="getById" parameterType="int" resultMap="userMap">
+		SELECT * FROM sys_user where id = #{id}
+	</select>
+	
+	<select id="getAll" resultMap="userMap">
+		select * from sys_user
+	</select>
+	
+	<select id="getListByCondition" parameterType="org.aptech.shiro.authority.pojo.SysUser" resultMap="userMap">
+		select * from sys_user
+		<include refid="conditionSql"></include>
+		<choose>
+			<when test="column == null">GROUP BY id order by id desc</when>
+			<otherwise>GROUP BY id order by ${column} ${orderBy}</otherwise>
+		</choose>
+		limit #{start},#{limit}
+	</select>
+	
+	<select id="getCountByCondition" parameterType="org.aptech.shiro.authority.pojo.SysUser" resultType="int">
+		SELECT COUNT(1) FROM sys_user
+		<include refid="conditionSql"></include>
+	</select>
+	
+	
+</mapper>

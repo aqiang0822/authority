@@ -1,0 +1,3 @@
+org\aptech\shiro\authority\controller\SysUserController.class
+org\aptech\shiro\authority\controller\SysPermissionController.class
+org\aptech\shiro\authority\controller\SysRoleController.class
